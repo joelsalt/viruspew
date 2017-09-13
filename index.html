@@ -32,7 +32,10 @@
 
             var virus = new PIXI.Sprite(loaderResources["images/virus.png"].texture);
             //store the scrolling backgrounds in an array
-            var backgrounds = [new PIXI.Sprite(loaderResources["images/bckground-bar1.png"].texture)];
+            var backgrounds = [];
+            for (let i = 1; i<10; i++){
+                backgrounds.push(new PIXI.Sprite(loaderResources["images/bckground-bar1.png"].texture));
+            }
             
             //move the virus to center of screen
             virus.anchor.x = 0.5;
@@ -43,32 +46,31 @@
             virus.y = window.innerHeight/2;
 
             //set all the backgrounds to take up the whole screen
-            for (var i = 0; i < 1; i++)
+            for (var i = 0; i < backgrounds.length; i++)
             {
                 backgrounds[i].width = window.innerWidth;
+                backgrounds[i].x = window.innerWidth * (i);
             }
 
-        document.addEventListener("keydown", function()
+        document.addEventListener("keydown", function(event)
             {
                 var e = event.keyCode;
-                if (e == 39)
-                {
+                if (e == 39){
                     
                     console.log("key pressed");
-                    for (var i = 0; i < 1; i++)
-                    {
-                        backgrounds[0].x -= 5;
+                    for (var i = 0; i < backgrounds.length; i++) {
+                        backgrounds[i].x -= 5;
                     }
                 }
-                else if (e == 37)
-                {
-                    for (var i = 0; i < 1; i++)
-                    {
+                else if (e == 37) {
+                    for (var i = 0; i < backgrounds.length; i++) {
                         backgrounds[i].x += 5;
                     }
                 }  
             
-            stage.addChild(backgrounds[0]);
+            for (let i = 0; i < backgrounds.length; i++) {
+                stage.addChild(backgrounds[i]);
+            }
             stage.addChild(virus);
             //Tell the `renderer` to `render` the `stage`
             renderer.render(stage);
@@ -76,7 +78,7 @@
 
             });
 
-             stage.addChild(backgrounds[0]);
+            stage.addChild(backgrounds[0]);
             stage.addChild(virus);
             //Tell the `renderer` to `render` the `stage`
             renderer.render(stage);
