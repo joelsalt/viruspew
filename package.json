@@ -1,0 +1,15 @@
+{
+  "name": "package.json",
+  "version": "1.0.0",
+  "description": "1. Install node\r 2. Install pixi.js",
+  "main": "index.js",
+  "dependencies": {
+    "pixi.js": "^4.5.5"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Joel Milligan",
+  "license": "MIT"
+}
