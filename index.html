@@ -1,15 +1,21 @@
 <!DOCTYPE html>
 <html>
 <head>
+<style>* {padding: 0; margin: 0}</style>
     
 </head>
 <body>
     
     <script src="node_modules/pixi.js/dist/pixi.min.js"></script>
     <script type="text/javascript">
+
         //Create the renderer
         var renderer = PIXI.autoDetectRenderer(256, 256);
 
+        renderer.view.style.position = "absolute";
+        renderer.view.style.display = "block";
+        renderer.autoResize = true;
+        renderer.resize(window.innerWidth, window.innerHeight);
         //Add the canvas to the HTML document
         document.body.appendChild(renderer.view);
 
