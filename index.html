@@ -48,39 +48,45 @@
                 backgrounds[i].width = window.innerWidth;
             }
 
-        document.addEventListener('keydown', animationLoop(backgrounds, event));
-
+        document.addEventListener("keydown", function()
+            {
+                var e = event.keyCode;
+                if (e == 39)
+                {
+                    
+                    console.log("key pressed");
+                    for (var i = 0; i < 1; i++)
+                    {
+                        backgrounds[0].x -= 5;
+                    }
+                }
+                else if (e == 37)
+                {
+                    for (var i = 0; i < 1; i++)
+                    {
+                        backgrounds[i].x += 5;
+                    }
+                }  
+            
             stage.addChild(backgrounds[0]);
             stage.addChild(virus);
-          
             //Tell the `renderer` to `render` the `stage`
             renderer.render(stage);
+          
+
+            });
+
+             stage.addChild(backgrounds[0]);
+            stage.addChild(virus);
+            //Tell the `renderer` to `render` the `stage`
+            renderer.render(stage);
+            
+           
         }
 
 
         
-        function animationLoop(backgrounds, event)
-        {
-            
-            
-                if (event.keyCode == 39)
-                {
-                    for (var i = 0; i < backgrounds.length; i++)
-                    {
-                        backgrounds[i].x -= 1;
-                    }
-                }
-                else if (event.keyCode == 37)
-                {
-                    for (var i = 0; i < backgrounds.length; i++)
-                    {
-                        backgrounds[i].x += 1;
-                    }
-                }
-
-                
-            
-        }  
+         
 
     </script>
 </body>
