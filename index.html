@@ -7,8 +7,10 @@
 <body>
     
     <script src="node_modules/pixi.js/dist/pixi.min.js"></script>
+    <script src="matter.min.js" type="text/javascript"></script>
     <script type="text/javascript">
 
+        var loaderResources = PIXI.loader.resources;
         //Create the renderer
         var renderer = PIXI.autoDetectRenderer(256, 256);
          //Create a container object called the `stage`
@@ -21,12 +23,17 @@
         renderer.autoResize = true;
         renderer.resize(window.innerWidth, window.innerHeight);
 
-        PIXI.loader.add("images/virus.png").load(setup);
+        PIXI.loader.add(["images/virus.png", "images/bckground-bar1.png"]).load(setup);
 
+    
 
         function setup()
         {
-            var virus = new PIXI.Sprite(PIXI.loader.resources["images/virus.png"].texture);
+
+            var virus = new PIXI.Sprite(loaderResources["images/virus.png"].texture);
+            //store the scrolling backgrounds in an array
+            var backgrounds = [new PIXI.Sprite(loaderResources["images/bckground-bar1.png"].texture)];
+            
             //move the virus to center of screen
             virus.anchor.x = 0.5;
             virus.anchor.y = 0.5;
@@ -35,13 +42,46 @@
             virus.x  = window.innerWidth/2;
             virus.y = window.innerHeight/2;
 
+            //set all the backgrounds to take up the whole screen
+            for (var i = 0; i < 1; i++)
+            {
+                backgrounds[i].width = window.innerWidth;
+            }
 
+        document.addEventListener('keydown', animationLoop(backgrounds, event));
 
+            stage.addChild(backgrounds[0]);
             stage.addChild(virus);
+          
             //Tell the `renderer` to `render` the `stage`
             renderer.render(stage);
         }
-      
+
+
+        
+        function animationLoop(backgrounds, event)
+        {
+            
+            
+                if (event.keyCode == 39)
+                {
+                    for (var i = 0; i < backgrounds.length; i++)
+                    {
+                        backgrounds[i].x -= 1;
+                    }
+                }
+                else if (event.keyCode == 37)
+                {
+                    for (var i = 0; i < backgrounds.length; i++)
+                    {
+                        backgrounds[i].x += 1;
+                    }
+                }
+
+                
+            
+        }  
+
     </script>
 </body>
 </html>
