@@ -24,7 +24,13 @@
         renderer.resize(window.innerWidth, window.innerHeight);
 
         PIXI.loader.add(["images/virus.png", "images/bckground-bar1.png"]).load(setup);
-
+        var backgrounds = [];
+        var xAcceleration = 0;
+        var yAcceleration = 0;
+        var stateCounter = 0;
+        var isNegativeAccel = false;
+        var isAccelerating = false;
+        var state;
     
 
         function setup()
@@ -32,8 +38,8 @@
 
             var virus = new PIXI.Sprite(loaderResources["images/virus.png"].texture);
             //store the scrolling backgrounds in an array
-            var backgrounds = [];
-            for (let i = 1; i<10; i++){
+            
+            for (var i = 0; i<10; i++){
                 backgrounds.push(new PIXI.Sprite(loaderResources["images/bckground-bar1.png"].texture));
             }
             
@@ -45,50 +51,168 @@
             virus.x  = window.innerWidth/2;
             virus.y = window.innerHeight/2;
 
-            //set all the backgrounds to take up the whole screen
+            //set all the backgrounds to take up the whole screen and make them invisible
             for (var i = 0; i < backgrounds.length; i++)
             {
                 backgrounds[i].width = window.innerWidth;
                 backgrounds[i].x = window.innerWidth * (i);
-            }
-
-        document.addEventListener("keydown", function(event)
-            {
-                var e = event.keyCode;
-                if (e == 39){
-                    
-                    console.log("key pressed");
-                    for (var i = 0; i < backgrounds.length; i++) {
-                        backgrounds[i].x -= 5;
-                    }
-                }
-                else if (e == 37) {
-                    for (var i = 0; i < backgrounds.length; i++) {
-                        backgrounds[i].x += 5;
-                    }
-                }  
-            
-            for (let i = 0; i < backgrounds.length; i++) {
+                backgrounds[i].vx = 0;
+                // if (i > 0)
+                // {
+                //     backgrounds[i].visible = false;
+                // }
                 stage.addChild(backgrounds[i]);
             }
-            stage.addChild(virus);
-            //Tell the `renderer` to `render` the `stage`
-            renderer.render(stage);
-          
-
-            });
 
             stage.addChild(backgrounds[0]);
             stage.addChild(virus);
-            //Tell the `renderer` to `render` the `stage`
-            renderer.render(stage);
-            
-           
+
+            //this will be the new way of connecting the keyboard to movement
+            var left = keyboard(37), right = keyboard(39);
+            left.press = function() {
+                //only move the backgrounds that are visible
+                for (var i = 0; i < backgrounds.length; i++) {
+                    if (backgrounds[i].visible) {
+                        backgrounds[i].vx = 40;
+                        xAcceleration = 0;
+                        stateCounter = 0;
+                        isNegativeAccel = true;
+                        isAccelerating = true;
+
+                    }
+                }
+            }
+
+            left.release = function() {
+                for (var i = 0; i < backgrounds.length; i++) {
+                    if (backgrounds[i].visible && !right.isDown) {
+                        
+                        isAccelerating = true;
+                        
+                    }
+                }
+            }
+
+            right.press = function() {
+                for (var i = 0; i < backgrounds.length; i++) { 
+                    if (backgrounds[i].visible) { 
+                        backgrounds[i].vx = -40;
+                        xAcceleration = 0;
+                        stateCounter = 0;
+                        isNegativeAccel = false;
+                        isAccelerating = true;
+                        xAcceleration = 0;
+
+                    }
+                }
+            }
+
+            right.release = function() {
+                for (var i = 0; i < backgrounds.length; i++) {
+                    if (backgrounds[i].visible && !left.isDown) {
+                        
+                        isAccelerating = true;
+                     
+                    }
+                }
+            }
+
+
+            state = play;
+            gameLoop();
         }
 
 
+        function gameLoop() {
+            //generate and store the random indexes for the path forward
+            var pathForward = [];
+            for (var i = 0; i < 2000; i++) {
+                pathForward.push(Math.floor(Math.random() * 10));
+            }
+            requestAnimationFrame(gameLoop);
+            state();
+            renderer.render(stage);
+        }
+
+
+         function play() {
+
+            // checkPosition();
+
+            stateCounter++;
+
+            for (var i = 0; i < backgrounds.length; i++) {
+                if (backgrounds[i].visible) {
+                    if (isNegativeAccel && isAccelerating) {
+                        xAcceleration = -Math.pow(.8, stateCounter/60);
+                         if (backgrounds[i].vx < 0)
+                          {
+                            backgrounds[i].vx  = 0;
+                          }
+                         
+                    }
+                    else if (!isNegativeAccel & isAccelerating) {
+                         xAcceleration = Math.pow(.8, stateCounter/60);
+                          if (backgrounds[i].vx > 0)
+                          {
+                            backgrounds[i].vx  = 0;
+                          }
+                          
+                    }
+
+                    if(backgrounds[i].vx != 0) {
+                        backgrounds[i].vx += xAcceleration;
+                    }
+                    
+                    backgrounds[i].x += backgrounds[i].vx;  
+                    console.log(backgrounds[i].vx);
+                }
+            }
+            
+        }
+
+        function checkPosition() {
+            
+        }
+
+        //keyboard function to listen and capture keyboard events
+        function keyboard(keyCode) {
+            var key = {};
+            key.code = keyCode;
+            key.isDown = false;
+            key.isUp = true;
+            key.press = undefined;
+            key.release = undefined;
+
+            key.downHandler = function(event) {
+                if (event.keyCode === key.code) {
+                    if (key.isUp && key.press)
+                        key.press();
+                    key.isUp = false;
+                    key.isDown = true;
+                }
+                event.preventDefault();
+            };
+
+            key.upHandler = function(event) {
+                if (event.keyCode === key.code) {
+                    if (key.isDown && key.release)
+                        key.release();
+                    key.isDown = false;
+                    key.isUp = true;
+                }
+                event.preventDefault();
+            };
+
+            window.addEventListener("keydown", key.downHandler.bind(key), false);
+            window.addEventListener("keyup", key.upHandler.bind(key), false);
+
+            return key;
+        }
+
+
+
         
-         
 
     </script>
 </body>
