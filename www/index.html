@@ -118,12 +118,12 @@
                    }
                    }
                  console.log(y);
-                 if (!(Math.abs(y) < 90)) {
-                     virus.vy = 35*Math.sin(theta);
+                 if (!(Math.abs(y) < 105)) {
+                     virus.vy = 40*Math.sin(theta)/ ((Math.abs(theta) < 1) ? 1 : 1.2*Math.abs(theta));
                  }
                    
     
-    
+   
                     xAcceleration = 0;
                     yAcceleration = 0;
     
@@ -224,7 +224,7 @@
              function play() {
     
                 // checkPosition();
-    
+                
                 stateCounter++;
                 //acceleration for backgrounds
                 for (var i = 0; i < backgrounds.length; i++) {
@@ -286,6 +286,9 @@
                     virus.vy += yAcceleration;
                 }
                 virus.x += virus.vx;
+                if (Number.isNaN(virus.vy)) {
+                    virus.vy = 10;
+                }
                 virus.y += virus.vy;
               
                 console.log(virus.vy);
