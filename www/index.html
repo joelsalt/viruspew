@@ -51,6 +51,7 @@
             renderer.resize(window.innerWidth, window.innerHeight);
     
             PIXI.loader.add(["assets/img/virus.png", "assets/img/bckground-bar1.png"]).load(setup);
+            var virus;
             var backgrounds = [];
             var xAcceleration = 0;
             var yAcceleration = 0;
@@ -58,25 +59,32 @@
             var isNegativeAccel = false;
             var isAccelerating = false;
             var state;
+            var isxNegativeAccel = false;
+            var isyNegativeAccel = false;
         
     
             function setup()
             {
     
-                var virus = new PIXI.Sprite(loaderResources["assets/img/virus.png"].texture);
+                virus = new PIXI.Sprite(loaderResources["images/virus.png"].texture);
                 //store the scrolling backgrounds in an array
                 
                 for (var i = 0; i<10; i++){
-                    backgrounds.push(new PIXI.Sprite(loaderResources["assets/img/bckground-bar1.png"].texture));
+                    backgrounds.push(new PIXI.Sprite(loaderResources["images/bckground-bar1.png"].texture));
                 }
                 
                 //move the virus to center of screen
-                virus.anchor.x = 0.5;
-                virus.anchor.y = 0.5;
+               
+    
                 virus.width = 100;
                 virus.height = 90;
+                virus.anchor.x = 0.5;
+                virus.anchor.y = 0.5;
+                virus.pivot.set(0, 0);
                 virus.x  = window.innerWidth/2;
                 virus.y = window.innerHeight/2;
+                virus.vx = 0;
+                virus.vy = 0;
     
                 //set all the backgrounds to take up the whole screen and make them invisible
                 for (var i = 0; i < backgrounds.length; i++)
@@ -93,6 +101,57 @@
     
                 stage.addChild(backgrounds[0]);
                 stage.addChild(virus);
+    
+                window.addEventListener("click", function(event) {
+                    stateCounter = 0;
+                   var x = event.screenX - virus.x;
+                   var y = virus.y - event.screenY + 90;
+                   
+                   for (var i = 0; i < backgrounds.length; i++) {
+                      if (x < 0){
+                    var theta = Math.atan(y/x);
+                    backgrounds[i].vx = 40*Math.cos(theta);
+                   }
+                   else if (x > 0){
+                    var theta = -Math.atan(y/x);
+                    backgrounds[i].vx = -40*Math.cos(theta);
+                   }
+                   }
+                 console.log(y);
+                 if (!(Math.abs(y) < 90)) {
+                     virus.vy = 35*Math.sin(theta);
+                 }
+                   
+    
+    
+                    xAcceleration = 0;
+                    yAcceleration = 0;
+    
+                    //tests to see which direction x and y acceleration should be going 
+                    for (var i = 0; i < backgrounds.length; i++) {
+                        if (backgrounds[i].vx < 0) {
+                        isxNegativeAccel = false;
+                    }
+                    else if (backgrounds[i].vx > 0){
+                        isxNegativeAccel = true;
+                    }
+                    }
+                    
+    
+                    if (virus.vy < 0) {
+                        isyNegativeAccel = false;
+                        if (virus.vy > -10) {
+                            virus.vy = -10;
+                        }
+                    }
+                    else if (virus.vy > 0){
+                        isyNegativeAccel = true;
+                        if (virus.vy < 10) {
+                            virus.vy = 10;
+                        }
+                    }
+    
+                });
     
                 //this will be the new way of connecting the keyboard to movement
                 var left = keyboard(37), right = keyboard(39);
@@ -167,22 +226,30 @@
                 // checkPosition();
     
                 stateCounter++;
-    
+                //acceleration for backgrounds
                 for (var i = 0; i < backgrounds.length; i++) {
                     if (backgrounds[i].visible) {
-                        if (isNegativeAccel && isAccelerating) {
-                            xAcceleration = -Math.pow(.8, stateCounter/60);
+                        if ((isNegativeAccel && isAccelerating) || isxNegativeAccel) {
+                            xAcceleration = -Math.pow(1.2, stateCounter/60);
                              if (backgrounds[i].vx < 0)
                               {
                                 backgrounds[i].vx  = 0;
                               }
+                              if (virus.vx < 0) {
+                                virus.vx = 0;
+                              }
+    
                              
                         }
-                        else if (!isNegativeAccel & isAccelerating) {
-                             xAcceleration = Math.pow(.8, stateCounter/60);
+                        else if ((!isNegativeAccel & isAccelerating) || !isxNegativeAccel) {
+                             xAcceleration = Math.pow(1.2, stateCounter/60);
                               if (backgrounds[i].vx > 0)
                               {
                                 backgrounds[i].vx  = 0;
+                              }
+    
+                              if (virus.vx > 0) {
+                                virus.vx = 0;
                               }
                               
                         }
@@ -192,14 +259,41 @@
                         }
                         
                         backgrounds[i].x += backgrounds[i].vx;  
-                        console.log(backgrounds[i].vx);
+                       
                     }
                 }
+    
+                if (isyNegativeAccel) {
+                    yAcceleration = -Math.pow(.9, stateCounter/60);
+                    if (virus.vy < 0) {
+                        virus.vy = 0;
+                    }
+                }
+                else if (!isyNegativeAccel) {
+                    yAcceleration = Math.pow(.9, stateCounter/60);
+                    if (virus.vy > 0) {
+                        virus.vy = 0;
+                    }
+                }
+    
+    
+    
+                if (virus.vx != 0) {
+                    virus.vx += xAcceleration;
+                }
+    
+                if (virus.vy != 0) {
+                    virus.vy += yAcceleration;
+                }
+                virus.x += virus.vx;
+                virus.y += virus.vy;
+              
+                console.log(virus.vy);
                 
             }
     
             function checkPosition() {
-                
+    
             }
     
             //keyboard function to listen and capture keyboard events
