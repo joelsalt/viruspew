@@ -1,0 +1,84 @@
+{
+  "_args": [
+    [
+      {
+        "raw": "https://github.com/vstirbu/PromisesPlugin.git",
+        "scope": null,
+        "escapedName": null,
+        "name": null,
+        "rawSpec": "https://github.com/vstirbu/PromisesPlugin.git",
+        "spec": "git+https://github.com/vstirbu/PromisesPlugin.git",
+        "type": "hosted",
+        "hosted": {
+          "type": "github",
+          "ssh": "git@github.com:vstirbu/PromisesPlugin.git",
+          "sshUrl": "git+ssh://git@github.com/vstirbu/PromisesPlugin.git",
+          "httpsUrl": "git+https://github.com/vstirbu/PromisesPlugin.git",
+          "gitUrl": "git://github.com/vstirbu/PromisesPlugin.git",
+          "shortcut": "github:vstirbu/PromisesPlugin",
+          "directUrl": "https://raw.githubusercontent.com/vstirbu/PromisesPlugin/master/package.json"
+        }
+      },
+      "C:\\virusPew\\viruspew\\node_modules"
+    ]
+  ],
+  "_from": "git+https://github.com/vstirbu/PromisesPlugin.git",
+  "_id": "es6-promise-plugin@4.1.1",
+  "_inCache": true,
+  "_location": "/es6-promise-plugin",
+  "_phantomChildren": {},
+  "_requested": {
+    "raw": "https://github.com/vstirbu/PromisesPlugin.git",
+    "scope": null,
+    "escapedName": null,
+    "name": null,
+    "rawSpec": "https://github.com/vstirbu/PromisesPlugin.git",
+    "spec": "git+https://github.com/vstirbu/PromisesPlugin.git",
+    "type": "hosted",
+    "hosted": {
+      "type": "github",
+      "ssh": "git@github.com:vstirbu/PromisesPlugin.git",
+      "sshUrl": "git+ssh://git@github.com/vstirbu/PromisesPlugin.git",
+      "httpsUrl": "git+https://github.com/vstirbu/PromisesPlugin.git",
+      "gitUrl": "git://github.com/vstirbu/PromisesPlugin.git",
+      "shortcut": "github:vstirbu/PromisesPlugin",
+      "directUrl": "https://raw.githubusercontent.com/vstirbu/PromisesPlugin/master/package.json"
+    }
+  },
+  "_requiredBy": [
+    "#USER",
+    "/"
+  ],
+  "_resolved": "git+https://github.com/vstirbu/PromisesPlugin.git#6ec3f7812945176569a62b304821a4aafc3b0949",
+  "_shasum": "ead69858ce08fd36b2b1994ff565e400e43af1b3",
+  "_shrinkwrap": null,
+  "_spec": "https://github.com/vstirbu/PromisesPlugin.git",
+  "_where": "C:\\virusPew\\viruspew\\node_modules",
+  "author": "",
+  "bugs": {
+    "url": "https://github.com/vstirbu/PromisesPlugin/issues"
+  },
+  "dependencies": {},
+  "description": "ES6-Promises polyfill for Cordova/PhoneGap",
+  "devDependencies": {
+    "browserify": "^14.4.0",
+    "es6-promise": "^4.1.1"
+  },
+  "ecosystem": "cordova",
+  "gitHead": "6ec3f7812945176569a62b304821a4aafc3b0949",
+  "homepage": "https://github.com/vstirbu/PromisesPlugin#readme",
+  "license": "MIT",
+  "main": "www/promise.js",
+  "name": "es6-promise-plugin",
+  "optionalDependencies": {},
+  "readme": "# PromisesPlugin\r\n\r\nES6-Promises polyfill for Cordova/PhoneGap\r\n\r\n# Motivation\r\n\r\nThe web view components on Cordova supported platforms lack suport for ES6 Promise. A polyfill library bundled with the plugin fixes the limitation. However, as more plugin use promises, the application developer using these plugins will end up with multiple promise polyfill libraries.\r\n\r\nThis plugin attempts to fix this situation by providing a Promise polyfill so that other plugins can rely on this functionality.\r\n\r\n# How to use\r\n\r\nConfigure your plugin's plugin.xml by adding this dependency:\r\n\r\n```\r\n<dependency id=\"es6-promise-plugin\" version=\"4.1.0\" />\r\n```\r\n\r\nCordova CLI takes care to install PromisesPlugin automatically:\r\n\r\n```\r\n$ cordova plugins add {yourPlugin}\r\n\r\n> Installing \"{yourPlugin}\" for {platform}\r\n> Installing \"es6-promise-plugin\" for {platform}\r\n```\r\n\r\nThis is all. ```window.Promise``` is available for use in your plugin.\r\n\r\n# Credits\r\n\r\nThis plugin wraps [es6-promise](https://github.com/jakearchibald/es6-promise) in a Cordova/PhoneGap friendly way.\r\n\r\n# License\r\n\r\nThe plugin is available under MIT license.\r\n",
+  "readmeFilename": "README.md",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/vstirbu/PromisesPlugin.git"
+  },
+  "scripts": {
+    "build": "./build"
+  },
+  "version": "4.1.1"
+}

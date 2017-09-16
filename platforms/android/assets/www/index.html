@@ -335,16 +335,18 @@
 
             function testCollision() {
 
+                //top background collision
                 for (var i = 0; i < backgrounds.length/2; i++)
                 {
-                    if ((backgrounds[i].y + backgrounds[i].height + 2) > (virus.y - virus.height/2 - 12)) {
+                    if ((backgrounds[i].y + backgrounds[i].height + 2) > (virus.y - virus.height/2 - 11)) {
                         isBottomCollision = false;
                         return true;
                     }
                 }
 
+                //bottom background
                 for (var i = backgrounds.length/2; i < backgrounds.length; i++) {
-                    if (backgrounds[i].y < (virus.y + virus.height/2 + 12)) {
+                    if (backgrounds[i].y < (virus.y + virus.height/2 + 11)) {
                         isBottomCollision = true;
                         return true;
                     }
