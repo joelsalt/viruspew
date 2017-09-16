@@ -52,7 +52,7 @@
             renderer.autoResize = true;
             renderer.resize(window.innerWidth, window.innerHeight);
     
-            PIXI.loader.add(["assets/img/sq.png", "assets/img/bckground-bar1.png", "assets/img/mainBackground.png"]).load(setup);
+            PIXI.loader.add(["assets/img/sq.png", "assets/img/bckground-bar1.png", "assets/img/mainBackground.png", "assets/img/circle.png"]).load(setup);
             var virus;
             var backgrounds = [];
             var mainBackground;
@@ -65,8 +65,10 @@
             var isxNegativeAccel = false;
             var isyNegativeAccel = false;
             var isBottomCollision = false;
+            var isPixelCollision = false;
             var x = 0;
             var y = 0;
+            var pixelContainer = [];
 
     
             function setup()
@@ -80,8 +82,14 @@
                 
                 for (var i = 0; i<20; i++){
                     backgrounds.push(new PIXI.Sprite(loaderResources["assets/img/bckground-bar1.png"].texture));
+
+                    if (i < 10) {
+                        pixelContainer.push(new PIXI.Sprite(loaderResources["assets/img/circle.png"].texture));
+                    }
+                   
                 }
                 
+
                 //move the virus to center of screen
                
     
@@ -98,6 +106,14 @@
                 //set all the backgrounds to take up the whole screen and make them invisible
                 for (var i = 0; i < backgrounds.length; i++)
                 {
+                    if (i < 10) {
+                        pixelContainer[i].width = 15;
+                        pixelContainer[i].height = 15;
+                        pixelContainer[i].x = window.innerWidth + 60*i;
+                        pixelContainer[i].y = window.innerHeight/2 - 50;
+                        pixelContainer[i].interactive = true;
+
+                    }
                     backgrounds[i].width = window.innerWidth;
                     backgrounds[i].x = window.innerWidth * (i);
                     backgrounds[i].vx = 0;
@@ -106,6 +122,7 @@
                         backgrounds[i].visible = false;
                     }
                     stage.addChild(backgrounds[i]);
+                    
 
                     if (i > 9) {
                         backgrounds[i].y = window.innerHeight - backgrounds[i].height;
@@ -118,14 +135,18 @@
                 mainBackground.height = window.innerHeight - 2*backgrounds[0].height;
                 mainBackground.y = backgrounds[0].y + backgrounds[0].height;
                 mainBackground.interactive = true;
+                stage.addChild(mainBackground);
 
+                for (var i = 0; i < 10; i++) {
+                    stage.addChild(pixelContainer[i]);
+                }
 
                 //pointerdown works for both mouse and touch
                 mainBackground.on('pointerdown', function(event) {
                     stateCounter = 0;
                    x = event.data.global.x - virus.x;
                    y = virus.y - event.data.global.y + backgrounds[0].y;
-                   console.log("event x = " + event.data.global.x);
+               
                    
                    for (var i = 0; i < backgrounds.length; i++) {
                         if (x < 0){
@@ -174,7 +195,7 @@
 
 
 
-                stage.addChild(mainBackground);
+                
                 stage.addChild(backgrounds[0]);
                 stage.addChild(virus);
     
@@ -250,8 +271,16 @@
              function play() {
     
                 // checkPosition();
-                //if there is a collsion, set the velocity to 0
+                //if there is a collsion, set the velocity to opposite
                 var collision = testCollision();
+                
+               
+                // for (var i = 0; i < pixelContainer.length; i++) {
+                //     if (isPixelCollision && collision) {
+                //         pixelContainer[i].visible = false;
+                //     }
+                // } 
+                
                 if ((collision && !isBottomCollision) && virus.vy < 0) {
                     virus.vy = -virus.vy;
                     virus.y = backgrounds[0].y + backgrounds[0].height + 45;
@@ -262,6 +291,7 @@
                     virus.y = backgrounds[10].y - 45;
                     isyNegativeAccel = false;
                 }
+                
                 
                 
                         stateCounter++;
@@ -297,9 +327,15 @@
                                 backgrounds[i].vx += xAcceleration;
                             }
                             
-                            backgrounds[i].x += backgrounds[i].vx;  
+                            backgrounds[i].x += backgrounds[i].vx; 
+
+                            
                            
                         }
+                        //move the pixels with the same velocity as the background
+                        if (i < 10) {
+                                pixelContainer[i].x += backgrounds[0].vx;
+                            } 
                     }
         
                     if (isyNegativeAccel) {
@@ -331,6 +367,7 @@
 
                     virus.y += virus.vy;
                   
+                    //keep the backgrounds moving forever!
                     for (var i = 0; i < backgrounds.length; i++) {
                         if (backgrounds[i].x < -backgrounds[0].width) {
                             switch (i) {
@@ -380,10 +417,28 @@
                     }
                 }
 
+                for (var i = 0; i < pixelContainer.length; i++)
+                {
+                    var yDiff = virus.y - virus.height/2 - pixelContainer[i].y + pixelContainer[i].height/2;
+                    var xDiff = window.innerWidth/2 - pixelContainer[i].x - pixelContainer[i].width/2;
+                    if (Math.abs(xDiff) < 50 && Math.abs(yDiff) < 50) {
+                         pixelContainer[i].visible = false;
+                        isPixelCollision = true;
+                        
+                       console.log(xDiff);
+                       console.log(yDiff);
+                    }  
+
+                                     
+                }
+                
+               
                 return false;
             }
               
-    
+                  
+
+
             function checkPosition() {
     
             }
