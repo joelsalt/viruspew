@@ -136,8 +136,9 @@
                         }
                     }    
                  
-                 if (!(Math.abs(y) < 105)) {
-                     virus.vy = 40*Math.sin(theta)/ ((Math.abs(theta) < 1) ? 1 : 1.2*Math.abs(theta));
+                 //allow user to move up or down if too close to edge
+                 if (!(Math.abs(y) < 45) || (event.data.global.y + 10 > backgrounds[10].y)) {
+                     virus.vy = 30*Math.sin(theta)/ ((Math.abs(theta) < 1) ? 1 : 1.2*Math.abs(theta));
                  }
                    
                     xAcceleration = 0;
@@ -176,55 +177,55 @@
                 stage.addChild(virus);
     
     
-                //this will be the new way of connecting the keyboard to movement
-                var left = keyboard(37), right = keyboard(39);
-                left.press = function() {
-                    //only move the backgrounds that are visible
-                    for (var i = 0; i < backgrounds.length; i++) {
-                        if (backgrounds[i].visible) {
-                            backgrounds[i].vx = 40;
-                            xAcceleration = 0;
-                            stateCounter = 0;
-                            isNegativeAccel = true;
-                            isAccelerating = true;
+                // //this will be the new way of connecting the keyboard to movement
+                // var left = keyboard(37), right = keyboard(39);
+                // left.press = function() {
+                //     //only move the backgrounds that are visible
+                //     for (var i = 0; i < backgrounds.length; i++) {
+                //         if (backgrounds[i].visible) {
+                //             backgrounds[i].vx = 40;
+                //             xAcceleration = 0;
+                //             stateCounter = 0;
+                //             isNegativeAccel = true;
+                //             isAccelerating = true;
     
-                        }
-                    }
-                }
+                //         }
+                //     }
+                // }
     
-                left.release = function() {
-                    for (var i = 0; i < backgrounds.length; i++) {
-                        if (backgrounds[i].visible && !right.isDown) {
+                // left.release = function() {
+                //     for (var i = 0; i < backgrounds.length; i++) {
+                //         if (backgrounds[i].visible && !right.isDown) {
                             
-                            isAccelerating = true;
+                //             isAccelerating = true;
                             
-                        }
-                    }
-                }
+                //         }
+                //     }
+                // }
     
-                right.press = function() {
-                    for (var i = 0; i < backgrounds.length; i++) { 
-                        if (backgrounds[i].visible) { 
-                            backgrounds[i].vx = -40;
-                            xAcceleration = 0;
-                            stateCounter = 0;
-                            isNegativeAccel = false;
-                            isAccelerating = true;
-                            xAcceleration = 0;
+                // right.press = function() {
+                //     for (var i = 0; i < backgrounds.length; i++) { 
+                //         if (backgrounds[i].visible) { 
+                //             backgrounds[i].vx = -40;
+                //             xAcceleration = 0;
+                //             stateCounter = 0;
+                //             isNegativeAccel = false;
+                //             isAccelerating = true;
+                //             xAcceleration = 0;
     
-                        }
-                    }
-                }
+                //         }
+                //     }
+                // }
     
-                right.release = function() {
-                    for (var i = 0; i < backgrounds.length; i++) {
-                        if (backgrounds[i].visible && !left.isDown) {
+                // right.release = function() {
+                //     for (var i = 0; i < backgrounds.length; i++) {
+                //         if (backgrounds[i].visible && !left.isDown) {
                             
-                            isAccelerating = true;
+                //             isAccelerating = true;
                          
-                        }
-                    }
-                }
+                //         }
+                //     }
+                // }
         
     
                 state = play;
@@ -250,12 +251,14 @@
                 //if there is a collsion, set the velocity to 0
                 var collision = testCollision();
                 if ((collision && !isBottomCollision) && virus.vy < 0) {
-                    virus.vy = 0;
+                    virus.vy = -virus.vy;
                     virus.y = backgrounds[0].y + backgrounds[0].height + 45;
+                    isyNegativeAccel = true;;
                 }
                 else if ((collision && isBottomCollision) && virus.vy >0) {
-                    virus.vy = 0;
+                    virus.vy = -virus.vy;
                     virus.y = backgrounds[10].y - 45;
+                    isyNegativeAccel = false;
                 }
                 
                 
@@ -298,13 +301,13 @@
                     }
         
                     if (isyNegativeAccel) {
-                        yAcceleration = -Math.pow(.9, stateCounter/60);
+                        yAcceleration = -Math.pow(1.3, stateCounter/60);
                         if (virus.vy < 0) {
                             virus.vy = 0;
                         }
                     }
                     else if (!isyNegativeAccel) {
-                        yAcceleration = Math.pow(.9, stateCounter/60);
+                        yAcceleration = Math.pow(1.3, stateCounter/60);
                         if (virus.vy > 0) {
                             virus.vy = 0;
                         }
@@ -354,41 +357,42 @@
             function checkPosition() {
     
             }
+            
+            //keyboard functionality disabled unless we want to use it for testing later
+            // //keyboard function to listen and capture keyboard events
+            // function keyboard(keyCode) {
+            //     var key = {};
+            //     key.code = keyCode;
+            //     key.isDown = false;
+            //     key.isUp = true;
+            //     key.press = undefined;
+            //     key.release = undefined;
     
-            //keyboard function to listen and capture keyboard events
-            function keyboard(keyCode) {
-                var key = {};
-                key.code = keyCode;
-                key.isDown = false;
-                key.isUp = true;
-                key.press = undefined;
-                key.release = undefined;
+            //     key.downHandler = function(event) {
+            //         if (event.keyCode === key.code) {
+            //             if (key.isUp && key.press)
+            //                 key.press();
+            //             key.isUp = false;
+            //             key.isDown = true;
+            //         }
+            //         event.preventDefault();
+            //     };
     
-                key.downHandler = function(event) {
-                    if (event.keyCode === key.code) {
-                        if (key.isUp && key.press)
-                            key.press();
-                        key.isUp = false;
-                        key.isDown = true;
-                    }
-                    event.preventDefault();
-                };
+            //     key.upHandler = function(event) {
+            //         if (event.keyCode === key.code) {
+            //             if (key.isDown && key.release)
+            //                 key.release();
+            //             key.isDown = false;
+            //             key.isUp = true;
+            //         }
+            //         event.preventDefault();
+            //     };
     
-                key.upHandler = function(event) {
-                    if (event.keyCode === key.code) {
-                        if (key.isDown && key.release)
-                            key.release();
-                        key.isDown = false;
-                        key.isUp = true;
-                    }
-                    event.preventDefault();
-                };
+            //     window.addEventListener("keydown", key.downHandler.bind(key), false);
+            //     window.addEventListener("keyup", key.upHandler.bind(key), false);
     
-                window.addEventListener("keydown", key.downHandler.bind(key), false);
-                window.addEventListener("keyup", key.upHandler.bind(key), false);
-    
-                return key;
-            }
+            //     return key;
+            // }
         </script>
     </body>
 </html>
