@@ -101,10 +101,10 @@
                     backgrounds[i].width = window.innerWidth;
                     backgrounds[i].x = window.innerWidth * (i);
                     backgrounds[i].vx = 0;
-                    // if (i > 0)
-                    // {
-                    //     backgrounds[i].visible = false;
-                    // }
+                     if ((i > 2 && i < 10) || i > 12)
+                    {
+                        backgrounds[i].visible = false;
+                    }
                     stage.addChild(backgrounds[i]);
 
                     if (i > 9) {
@@ -331,7 +331,33 @@
 
                     virus.y += virus.vy;
                   
-                   
+                    for (var i = 0; i < backgrounds.length; i++) {
+                        if (backgrounds[i].x < -backgrounds[0].width) {
+                            switch (i) {
+                                case 0:
+                                backgrounds[0].x = backgrounds[2].x + backgrounds[0].width;
+                                break;
+                                case 1:
+                                backgrounds[1].x = backgrounds[0].x + backgrounds[0].width;
+                                break;
+                                case 2:
+                                backgrounds[2].x = backgrounds[1].x + backgrounds[0].width;
+                                break;
+                                case 10: 
+                                backgrounds[10].x = backgrounds[12].x + backgrounds[0].width;
+                                break;
+                                case 11:
+                                backgrounds[11].x = backgrounds[10].x + backgrounds[0].width;
+                                break;
+                                case 12:
+                                backgrounds[12].x = backgrounds[11].x + backgrounds[0].width;
+                                break;
+
+
+                            }
+                            
+                        }
+                    }
             
                 }
 
