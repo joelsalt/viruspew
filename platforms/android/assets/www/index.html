@@ -28,401 +28,498 @@
             * Disables use of inline scripts in order to mitigate risk of XSS vulnerabilities. To change this:
                 * Enable inline JS: add 'unsafe-inline' to default-src
         -->
-        <meta name="viewport" content="user-scalable=no, initial-scale=1, maximum-scale=1, minimum-scale=1, width=device-width">
+        <meta name="viewport" content="initial-scale=1, maximum-scale=1, minimum-scale=1, width=device-width">
+        <script type="text/javascript" src="cordova.js"></script>
         <style>html, body {padding: 0; margin: 0}</style>
     </head>
     <body>
-        <script type="text/javascript" src="cordova.js"></script>
-
         <script src="js/pixi.min.js"></script>
         <script type="text/javascript">
+            document.addEventListener("deviceready", function() {
+                window.screen.orientation.lock("landscape-primary");
+                if (AndroidFullScreen) {
+                    // Extend your app underneath the status bar (Android 4.4+ only)
+                    AndroidFullScreen.showUnderStatusBar();
 
-            screen.orientation.lock("landscape");
-    
-            var loaderResources = PIXI.loader.resources;
-            //Create the renderer
-            var renderer = PIXI.autoDetectRenderer(256, 256);
-             //Create a container object called the `stage`
-            var stage = new PIXI.Container();
-            //Add the canvas to the HTML document
-            document.body.appendChild(renderer.view);
-            //make the canvas fullscreen
-            renderer.view.style.position = "absolute";
-            renderer.view.style.display = "block";
-            renderer.autoResize = true;
-            renderer.resize(window.innerWidth, window.innerHeight);
-    
-            PIXI.loader.add(["assets/img/sq.png", "assets/img/bckground-bar1.png", "assets/img/mainBackground.png"]).load(setup);
-            var virus;
-            var backgrounds = [];
-            var mainBackground;
-            var xAcceleration = 0;
-            var yAcceleration = 0;
-            var stateCounter = 0;
-            var isNegativeAccel = false;
-            var isAccelerating = false;
-            var state;
-            var isxNegativeAccel = false;
-            var isyNegativeAccel = false;
-            var isBottomCollision = false;
-            var x = 0;
-            var y = 0;
+                    // Extend your app underneath the system UI (Android 4.4+ only)
+                    AndroidFullScreen.showUnderSystemUI();
 
-    
-            function setup()
-            {
-
-                mainBackground = new PIXI.Sprite(loaderResources["assets/img/mainBackground.png"].texture);
-
-
-                virus = new PIXI.Sprite(loaderResources["assets/img/sq.png"].texture);
-                //store the scrolling backgrounds in an array
-                
-                for (var i = 0; i<20; i++){
-                    backgrounds.push(new PIXI.Sprite(loaderResources["assets/img/bckground-bar1.png"].texture));
+                    // Hide system UI and keep it hidden (Android 4.4+ only)
+                    AndroidFullScreen.immersiveMode();
                 }
-                
-                //move the virus to center of screen
-               
-    
-                virus.width = 100;
-                virus.height = 90;
-                virus.anchor.x = 0.5;
-                virus.anchor.y = 0.5;
-                
-                virus.x  = window.innerWidth/2;
-                virus.y = window.innerHeight/2;
-                virus.vx = 0;
-                virus.vy = 0;
-    
-                //set all the backgrounds to take up the whole screen and make them invisible
-                for (var i = 0; i < backgrounds.length; i++)
+            });
+
+            window.addEventListener("orientationchange", function(){
+                window.dispatchEvent(new Event("loadgame"));
+            });
+        </script>
+
+        <script type="text/javascript">
+            window.addEventListener("loadgame", function(){
+                console.log("event caught");
+
+                var loaderResources = PIXI.loader.resources;
+                //Create the renderer
+                var renderer = PIXI.autoDetectRenderer();
+                //Create a container object called the `stage`
+                var stage = new PIXI.Container();
+                //Add the canvas to the HTML document
+                document.body.appendChild(renderer.view);
+                //make the canvas fullscreen
+                renderer.view.style.position = "absolute";
+                renderer.view.style.display = "block";
+                renderer.autoResize = true;
+                renderer.resize(window.innerHeight, window.innerWidth);
+        
+                PIXI.loader.add(["assets/img/sq.png", "assets/img/bckground-bar1.png", "assets/img/mainBackground.png", "assets/img/circle.png"]).load(setup);
+                var virus;
+                var backgrounds = [];
+                var mainBackground;
+                var xAcceleration = 0;
+                var yAcceleration = 0;
+                var stateCounter = 0;
+                var isNegativeAccel = false;
+                var isAccelerating = false;
+                var state;
+                var isxNegativeAccel = false;
+                var isyNegativeAccel = false;
+                var isBottomCollision = false;
+                var isPixelCollision = false;
+                var x = 0;
+                var y = 0;
+                var pixelContainer = [];
+                var originalVy;
+                var originaly;
+
+        
+                function setup()
                 {
-                    backgrounds[i].width = window.innerWidth;
-                    backgrounds[i].x = window.innerWidth * (i);
-                    backgrounds[i].vx = 0;
-                     if ((i > 2 && i < 10) || i > 12)
-                    {
-                        backgrounds[i].visible = false;
-                    }
-                    stage.addChild(backgrounds[i]);
 
-                    if (i > 9) {
-                        backgrounds[i].y = window.innerHeight - backgrounds[i].height;
-                        backgrounds[i].x = window.innerWidth * (i-10);
-                    }
-                }
-
-                //set the farthest background to the size of the screen
-                mainBackground.width = window.innerWidth * 5;
-                mainBackground.height = window.innerHeight - 2*backgrounds[0].height;
-                mainBackground.y = backgrounds[0].y + backgrounds[0].height;
-                mainBackground.interactive = true;
+                    mainBackground = new PIXI.Sprite(loaderResources["assets/img/mainBackground.png"].texture);
 
 
-                //pointerdown works for both mouse and touch
-                mainBackground.on('pointerdown', function(event) {
-                    stateCounter = 0;
-                   x = event.data.global.x - virus.x;
-                   y = virus.y - event.data.global.y + backgrounds[0].y;
-                   console.log("event x = " + event.data.global.x);
-                   
-                   for (var i = 0; i < backgrounds.length; i++) {
-                        if (x < 0){
-                            var theta = Math.atan(y/x);
-                            backgrounds[i].vx = 40*Math.cos(theta);
+                    virus = new PIXI.Sprite(loaderResources["assets/img/sq.png"].texture);
+                    //store the scrolling backgrounds in an array
+                    
+                    for (var i = 0; i<20; i++){
+                        backgrounds.push(new PIXI.Sprite(loaderResources["assets/img/bckground-bar1.png"].texture));
+
+                        if (i < 10) {
+                            pixelContainer.push(new PIXI.Sprite(loaderResources["assets/img/circle.png"].texture));
                         }
-                        else if (x > 0){
-                        var theta = -Math.atan(y/x);
-                        backgrounds[i].vx = -40*Math.cos(theta);
-                        }
-                    }    
-                 
-                 //allow user to move up or down if too close to edge
-                 if (!(Math.abs(y) < 45) || (event.data.global.y + 10 > backgrounds[10].y)) {
-                     virus.vy = 30*Math.sin(theta)/ ((Math.abs(theta) < 1) ? 1 : 1.2*Math.abs(theta));
-                 }
-                   
-                    xAcceleration = 0;
-                    yAcceleration = 0;
-    
-                    //tests to see which direction x and y acceleration should be going 
-                    for (var i = 0; i < backgrounds.length; i++) {
-                        if (backgrounds[i].vx < 0) {
-                            isxNegativeAccel = false;
-                        }
-                        else if (backgrounds[i].vx > 0){
-                            isxNegativeAccel = true;
-                        }
+                    
                     }
                     
-    
-                    if (virus.vy < 0) {
-                        isyNegativeAccel = false;
-                        if (virus.vy > -10) {
-                            virus.vy = -10;
+
+                    //move the virus to center of screen
+                
+        
+                    virus.width = 100;
+                    virus.height = 90;
+                    virus.anchor.x = 0.5;
+                    virus.anchor.y = 0.5;
+                    
+                    virus.x  = window.innerWidth/2;
+                    virus.y = window.innerHeight/2;
+                    virus.vx = 0;
+                    virus.vy = 0;
+        
+                    //set all the backgrounds to take up the whole screen and make them invisible
+                    for (var i = 0; i < backgrounds.length; i++)
+                    {
+                        if (i < 10) {
+                            pixelContainer[i].width = 15;
+                            pixelContainer[i].height = 15;
+                            pixelContainer[i].x = window.innerWidth + 60*i;
+                            pixelContainer[i].y = window.innerHeight/2 - 50;
+                            pixelContainer[i].interactive = true;
+
+                        }
+                        backgrounds[i].width = window.innerWidth;
+                        backgrounds[i].x = window.innerWidth * (i);
+                        backgrounds[i].vx = 0;
+                        if ((i > 2 && i < 10) || i > 12) {
+                            backgrounds[i].visible = false;
+                        }
+                        stage.addChild(backgrounds[i]);
+                        
+
+                        if (i > 9) {
+                            backgrounds[i].y = window.innerHeight - backgrounds[i].height;
+                            backgrounds[i].x = window.innerWidth * (i-10);
                         }
                     }
-                    else if (virus.vy > 0){
+
+                    //set the farthest background to the size of the screen
+                    mainBackground.width = window.innerWidth * 5;
+                    mainBackground.height = window.innerHeight - 2*backgrounds[0].height;
+                    mainBackground.y = backgrounds[0].y + backgrounds[0].height;
+                    mainBackground.interactive = true;
+                    stage.addChild(mainBackground);
+
+                    for (var i = 0; i < 10; i++) {
+                        stage.addChild(pixelContainer[i]);
+                    }
+
+                    //pointerdown works for both mouse and touch
+                    mainBackground.on('pointerdown', function(event) {
+                        stateCounter = 0;
+                    x = event.data.global.x - virus.x;
+                    y = virus.y - event.data.global.y + backgrounds[0].y;
+                
+                    
+                    for (var i = 0; i < backgrounds.length; i++) {
+                            if (x < 0){
+                                if (backgrounds[i].vx < 0) {
+                                    backgrounds[i].vx = 0;
+                                }
+                                var theta = Math.atan(y/x);
+                                backgrounds[i].vx += 40*Math.cos(theta);
+                                
+                            }
+                            else if (x > 0 ){
+                                if (backgrounds[i].vx > 0) {
+                                    backgrounds[i].vx = 0;
+                                }
+                            var theta = -Math.atan(y/x);
+                            backgrounds[i].vx -= 40*Math.cos(theta);
+                        
+                            }
+                        }    
+                    
+                    //allow user to move up or down if too close to edge
+                    if (!(Math.abs(y) < 50) || (event.data.global.y + 10 > backgrounds[10].y)) {
+                        virus.vy = 30*Math.sin(theta)/ ((Math.abs(theta) < 1) ? 1 : 1.2*Math.abs(theta));
+                        if (stateCounter == 0) {
+
+                            originalVy = virus.vy;
+                            originaly = y;
+                        }
+                    }
+                    else {
+                        virus.vy = 0;
+
+                    }
+                    
+                        xAcceleration = 0;
+                        yAcceleration = 0;
+        
+                        //tests to see which direction x and y acceleration should be going 
+                        for (var i = 0; i < backgrounds.length; i++) {
+                            if (backgrounds[i].vx < 0) {
+                                isxNegativeAccel = false;
+                            }
+                            else if (backgrounds[i].vx > 0){
+                                isxNegativeAccel = true;
+                            }
+                        }
+                        
+        
+                        if (virus.vy < 0) {
+                            isyNegativeAccel = false;
+                            if (virus.vy > -10) {
+                                virus.vy = -10;
+                            }
+                        }
+                        else if (virus.vy > 0){
+                            isyNegativeAccel = true;
+                            if (virus.vy < 10) {
+                                virus.vy = 10;
+                            }
+                        }
+                    });
+
+
+
+
+                    
+                    stage.addChild(backgrounds[0]);
+                    stage.addChild(virus);
+        
+        
+                    // //this will be the new way of connecting the keyboard to movement
+                    // var left = keyboard(37), right = keyboard(39);
+                    // left.press = function() {
+                    //     //only move the backgrounds that are visible
+                    //     for (var i = 0; i < backgrounds.length; i++) {
+                    //         if (backgrounds[i].visible) {
+                    //             backgrounds[i].vx = 40;
+                    //             xAcceleration = 0;
+                    //             stateCounter = 0;
+                    //             isNegativeAccel = true;
+                    //             isAccelerating = true;
+        
+                    //         }
+                    //     }
+                    // }
+        
+                    // left.release = function() {
+                    //     for (var i = 0; i < backgrounds.length; i++) {
+                    //         if (backgrounds[i].visible && !right.isDown) {
+                                
+                    //             isAccelerating = true;
+                                
+                    //         }
+                    //     }
+                    // }
+        
+                    // right.press = function() {
+                    //     for (var i = 0; i < backgrounds.length; i++) { 
+                    //         if (backgrounds[i].visible) { 
+                    //             backgrounds[i].vx = -40;
+                    //             xAcceleration = 0;
+                    //             stateCounter = 0;
+                    //             isNegativeAccel = false;
+                    //             isAccelerating = true;
+                    //             xAcceleration = 0;
+        
+                    //         }
+                    //     }
+                    // }
+        
+                    // right.release = function() {
+                    //     for (var i = 0; i < backgrounds.length; i++) {
+                    //         if (backgrounds[i].visible && !left.isDown) {
+                                
+                    //             isAccelerating = true;
+                            
+                    //         }
+                    //     }
+                    // }
+            
+        
+                    state = play;
+                    gameLoop();
+                }
+        
+        
+                function gameLoop() {
+                    //generate and store the random indexes for the path forward
+                    var pathForward = [];
+                    for (var i = 0; i < 2000; i++) {
+                        pathForward.push(Math.floor(Math.random() * 10));
+                    }
+                    requestAnimationFrame(gameLoop);
+                    state();
+                    renderer.render(stage);
+                }
+        
+        
+                function play() {
+        
+                    // checkPosition();
+                    //if there is a collsion, set the velocity to opposite
+                    var collision = testCollision();
+                    
+                
+                    // for (var i = 0; i < pixelContainer.length; i++) {
+                    //     if (isPixelCollision && collision) {
+                    //         pixelContainer[i].visible = false;
+                    //     }
+                    // } 
+                    
+                    if ((collision && !isBottomCollision) && virus.vy < 0) {
+                        virus.vy = -virus.vy - Math.abs(virus.vy)/3;
+                        virus.y = backgrounds[0].y + backgrounds[0].height + 45;
+                        isyNegativeAccel = false;
+                        console.log(virus.vy);
+                    }
+                    else if ((collision && isBottomCollision) && virus.vy > 0) {
+                        virus.vy = -virus.vy + Math.abs(virus.vy)/3;
+                        virus.y = backgrounds[10].y - 45;
                         isyNegativeAccel = true;
-                        if (virus.vy < 10) {
+                        console.log(virus.vy);
+                    }
+                    
+                    
+                    
+                            stateCounter++;
+                        //acceleration for backgrounds
+                        for (var i = 0; i < backgrounds.length; i++) {
+                            if (backgrounds[i].visible) {
+                                if ((isNegativeAccel && isAccelerating) || isxNegativeAccel) {
+                                    xAcceleration = -Math.pow(3, stateCounter/60);
+                                    if (backgrounds[i].vx < 0)
+                                    {
+                                        backgrounds[i].vx  = 0;
+                                    }
+                                    if (virus.vx < 0) {
+                                        virus.vx = 0;
+                                    }
+            
+                                    
+                                }
+                                else if ((!isNegativeAccel & isAccelerating) || !isxNegativeAccel) {
+                                    xAcceleration = Math.pow(3, stateCounter/60);
+                                    if (backgrounds[i].vx > 0)
+                                    {
+                                        backgrounds[i].vx  = 0;
+                                    }
+            
+                                    if (virus.vx > 0) {
+                                        virus.vx = 0;
+                                    }
+                                    
+                                }
+            
+                                if(backgrounds[i].vx != 0) {
+                                    backgrounds[i].vx += xAcceleration;
+                                }
+                                
+                                backgrounds[i].x += backgrounds[i].vx; 
+
+                                
+                            
+                            }
+                            //move the pixels with the same velocity as the background
+                            if (i < 10) {
+                                    pixelContainer[i].x += backgrounds[0].vx;
+                                } 
+                        }
+            
+                        if (isyNegativeAccel) {
+                            yAcceleration = (Math.pow(originalVy, 2)/(2*originaly));
+                            if (virus.vy < 0) {
+                                virus.vy = 0;
+                            }
+                        }
+                        else if (!isyNegativeAccel) {
+                            yAcceleration = Math.pow(originalVy, 2)/(2*originaly);
+                            if (virus.vy > 0) {
+                                virus.vy = 0;
+                            }
+                        }
+            
+            
+            
+                        if (virus.vx != 0) {
+                            virus.vx += xAcceleration;
+                        }
+            
+                        if (virus.vy != 0) {
+                            virus.vy += yAcceleration;
+                        }
+                        virus.x += virus.vx;
+                        if (Number.isNaN(virus.vy)) {
                             virus.vy = 10;
                         }
+
+                        virus.y += virus.vy;
+                    
+                        //keep the backgrounds moving forever!
+                        for (var i = 0; i < backgrounds.length; i++) {
+                            if (backgrounds[i].x < -backgrounds[0].width) {
+                                switch (i) {
+                                    case 0:
+                                    backgrounds[0].x = backgrounds[2].x + backgrounds[0].width;
+                                    break;
+                                    case 1:
+                                    backgrounds[1].x = backgrounds[0].x + backgrounds[0].width;
+                                    break;
+                                    case 2:
+                                    backgrounds[2].x = backgrounds[1].x + backgrounds[0].width;
+                                    break;
+                                    case 10: 
+                                    backgrounds[10].x = backgrounds[12].x + backgrounds[0].width;
+                                    break;
+                                    case 11:
+                                    backgrounds[11].x = backgrounds[10].x + backgrounds[0].width;
+                                    break;
+                                    case 12:
+                                    backgrounds[12].x = backgrounds[11].x + backgrounds[0].width;
+                                    break;
+
+
+                                }
+                                
+                            }
+                        }
+                
                     }
-                });
 
+                function testCollision() {
 
+                    //top background collision
+                    for (var i = 0; i < backgrounds.length/2; i++)
+                    {
+                        if ((backgrounds[i].y + backgrounds[i].height + 2) > (virus.y - virus.height/2 - 11)) {
+                            isBottomCollision = false;
+                            return true;
+                        }
+                    }
 
+                    //bottom background
+                    for (var i = backgrounds.length/2; i < backgrounds.length; i++) {
+                        if (backgrounds[i].y < (virus.y + virus.height/2 + 11)) {
+                            isBottomCollision = true;
+                            return true;
+                        }
+                    }
 
-                stage.addChild(mainBackground);
-                stage.addChild(backgrounds[0]);
-                stage.addChild(virus);
-    
-    
-                // //this will be the new way of connecting the keyboard to movement
-                // var left = keyboard(37), right = keyboard(39);
-                // left.press = function() {
-                //     //only move the backgrounds that are visible
-                //     for (var i = 0; i < backgrounds.length; i++) {
-                //         if (backgrounds[i].visible) {
-                //             backgrounds[i].vx = 40;
-                //             xAcceleration = 0;
-                //             stateCounter = 0;
-                //             isNegativeAccel = true;
-                //             isAccelerating = true;
-    
-                //         }
-                //     }
-                // }
-    
-                // left.release = function() {
-                //     for (var i = 0; i < backgrounds.length; i++) {
-                //         if (backgrounds[i].visible && !right.isDown) {
+                    for (var i = 0; i < pixelContainer.length; i++)
+                    {
+                        var yDiff = virus.y - virus.height/2 - pixelContainer[i].y + pixelContainer[i].height/2;
+                        var xDiff = window.innerWidth/2 - pixelContainer[i].x - pixelContainer[i].width/2;
+                        if (Math.abs(xDiff) < 50 && Math.abs(yDiff) < 50) {
+                            pixelContainer[i].visible = false;
+                            isPixelCollision = true;
                             
-                //             isAccelerating = true;
-                            
-                //         }
-                //     }
-                // }
-    
-                // right.press = function() {
-                //     for (var i = 0; i < backgrounds.length; i++) { 
-                //         if (backgrounds[i].visible) { 
-                //             backgrounds[i].vx = -40;
-                //             xAcceleration = 0;
-                //             stateCounter = 0;
-                //             isNegativeAccel = false;
-                //             isAccelerating = true;
-                //             xAcceleration = 0;
-    
-                //         }
-                //     }
-                // }
-    
-                // right.release = function() {
-                //     for (var i = 0; i < backgrounds.length; i++) {
-                //         if (backgrounds[i].visible && !left.isDown) {
-                            
-                //             isAccelerating = true;
-                         
-                //         }
-                //     }
-                // }
-        
-    
-                state = play;
-                gameLoop();
-            }
-    
-    
-            function gameLoop() {
-                //generate and store the random indexes for the path forward
-                var pathForward = [];
-                for (var i = 0; i < 2000; i++) {
-                    pathForward.push(Math.floor(Math.random() * 10));
-                }
-                requestAnimationFrame(gameLoop);
-                state();
-                renderer.render(stage);
-            }
-    
-    
-             function play() {
-    
-                // checkPosition();
-                //if there is a collsion, set the velocity to 0
-                var collision = testCollision();
-                if ((collision && !isBottomCollision) && virus.vy < 0) {
-                    virus.vy = -virus.vy;
-                    virus.y = backgrounds[0].y + backgrounds[0].height + 45;
-                    isyNegativeAccel = true;;
-                }
-                else if ((collision && isBottomCollision) && virus.vy >0) {
-                    virus.vy = -virus.vy;
-                    virus.y = backgrounds[10].y - 45;
-                    isyNegativeAccel = false;
+                        console.log(xDiff);
+                        console.log(yDiff);
+                        }  
+
+                                        
+                    }
+                    
+                
+                    return false;
                 }
                 
+                    
+
+
+                function checkPosition() {
+        
+                }
                 
-                        stateCounter++;
-                    //acceleration for backgrounds
-                    for (var i = 0; i < backgrounds.length; i++) {
-                        if (backgrounds[i].visible) {
-                            if ((isNegativeAccel && isAccelerating) || isxNegativeAccel) {
-                                xAcceleration = -Math.pow(1.2, stateCounter/60);
-                                 if (backgrounds[i].vx < 0)
-                                  {
-                                    backgrounds[i].vx  = 0;
-                                  }
-                                  if (virus.vx < 0) {
-                                    virus.vx = 0;
-                                  }
+                //keyboard functionality disabled unless we want to use it for testing later
+                // //keyboard function to listen and capture keyboard events
+                // function keyboard(keyCode) {
+                //     var key = {};
+                //     key.code = keyCode;
+                //     key.isDown = false;
+                //     key.isUp = true;
+                //     key.press = undefined;
+                //     key.release = undefined;
         
-                                 
-                            }
-                            else if ((!isNegativeAccel & isAccelerating) || !isxNegativeAccel) {
-                                 xAcceleration = Math.pow(1.2, stateCounter/60);
-                                  if (backgrounds[i].vx > 0)
-                                  {
-                                    backgrounds[i].vx  = 0;
-                                  }
+                //     key.downHandler = function(event) {
+                //         if (event.keyCode === key.code) {
+                //             if (key.isUp && key.press)
+                //                 key.press();
+                //             key.isUp = false;
+                //             key.isDown = true;
+                //         }
+                //         event.preventDefault();
+                //     };
         
-                                  if (virus.vx > 0) {
-                                    virus.vx = 0;
-                                  }
-                                  
-                            }
+                //     key.upHandler = function(event) {
+                //         if (event.keyCode === key.code) {
+                //             if (key.isDown && key.release)
+                //                 key.release();
+                //             key.isDown = false;
+                //             key.isUp = true;
+                //         }
+                //         event.preventDefault();
+                //     };
         
-                            if(backgrounds[i].vx != 0) {
-                                backgrounds[i].vx += xAcceleration;
-                            }
-                            
-                            backgrounds[i].x += backgrounds[i].vx;  
-                           
-                        }
-                    }
+                //     window.addEventListener("keydown", key.downHandler.bind(key), false);
+                //     window.addEventListener("keyup", key.upHandler.bind(key), false);
         
-                    if (isyNegativeAccel) {
-                        yAcceleration = -Math.pow(1.3, stateCounter/60);
-                        if (virus.vy < 0) {
-                            virus.vy = 0;
-                        }
-                    }
-                    else if (!isyNegativeAccel) {
-                        yAcceleration = Math.pow(1.3, stateCounter/60);
-                        if (virus.vy > 0) {
-                            virus.vy = 0;
-                        }
-                    }
-        
-        
-        
-                    if (virus.vx != 0) {
-                        virus.vx += xAcceleration;
-                    }
-        
-                    if (virus.vy != 0) {
-                        virus.vy += yAcceleration;
-                    }
-                    virus.x += virus.vx;
-                    if (Number.isNaN(virus.vy)) {
-                        virus.vy = 10;
-                    }
-
-                    virus.y += virus.vy;
-                  
-                    for (var i = 0; i < backgrounds.length; i++) {
-                        if (backgrounds[i].x < -backgrounds[0].width) {
-                            switch (i) {
-                                case 0:
-                                backgrounds[0].x = backgrounds[2].x + backgrounds[0].width;
-                                break;
-                                case 1:
-                                backgrounds[1].x = backgrounds[0].x + backgrounds[0].width;
-                                break;
-                                case 2:
-                                backgrounds[2].x = backgrounds[1].x + backgrounds[0].width;
-                                break;
-                                case 10: 
-                                backgrounds[10].x = backgrounds[12].x + backgrounds[0].width;
-                                break;
-                                case 11:
-                                backgrounds[11].x = backgrounds[10].x + backgrounds[0].width;
-                                break;
-                                case 12:
-                                backgrounds[12].x = backgrounds[11].x + backgrounds[0].width;
-                                break;
-
-
-                            }
-                            
-                        }
-                    }
+                //     return key;
+                // }
+            });
+    
             
-                }
-
-            function testCollision() {
-
-                //top background collision
-                for (var i = 0; i < backgrounds.length/2; i++)
-                {
-                    if ((backgrounds[i].y + backgrounds[i].height + 2) > (virus.y - virus.height/2 - 11)) {
-                        isBottomCollision = false;
-                        return true;
-                    }
-                }
-
-                //bottom background
-                for (var i = backgrounds.length/2; i < backgrounds.length; i++) {
-                    if (backgrounds[i].y < (virus.y + virus.height/2 + 11)) {
-                        isBottomCollision = true;
-                        return true;
-                    }
-                }
-
-                return false;
-            }
-              
-    
-            function checkPosition() {
-    
-            }
-            
-            //keyboard functionality disabled unless we want to use it for testing later
-            // //keyboard function to listen and capture keyboard events
-            // function keyboard(keyCode) {
-            //     var key = {};
-            //     key.code = keyCode;
-            //     key.isDown = false;
-            //     key.isUp = true;
-            //     key.press = undefined;
-            //     key.release = undefined;
-    
-            //     key.downHandler = function(event) {
-            //         if (event.keyCode === key.code) {
-            //             if (key.isUp && key.press)
-            //                 key.press();
-            //             key.isUp = false;
-            //             key.isDown = true;
-            //         }
-            //         event.preventDefault();
-            //     };
-    
-            //     key.upHandler = function(event) {
-            //         if (event.keyCode === key.code) {
-            //             if (key.isDown && key.release)
-            //                 key.release();
-            //             key.isDown = false;
-            //             key.isUp = true;
-            //         }
-            //         event.preventDefault();
-            //     };
-    
-            //     window.addEventListener("keydown", key.downHandler.bind(key), false);
-            //     window.addEventListener("keyup", key.upHandler.bind(key), false);
-    
-            //     return key;
-            // }
         </script>
     </body>
 </html>
