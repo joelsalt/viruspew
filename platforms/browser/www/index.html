@@ -37,7 +37,19 @@
         <script type="text/javascript">
             document.addEventListener("deviceready", function() {
                 window.screen.orientation.lock("landscape-primary");
+                if (typeof AndroidFullScreen !== "undefined") {
+                    // Extend your app underneath the status bar (Android 4.4+ only)
+                    AndroidFullScreen.showUnderStatusBar();
 
+                    // Extend your app underneath the system UI (Android 4.4+ only)
+                    AndroidFullScreen.showUnderSystemUI();
+
+                    // Hide system UI and keep it hidden (Android 4.4+ only)
+                    AndroidFullScreen.immersiveMode();
+                }
+            });
+
+            window.addEventListener("orientationchange", function(){
                 window.dispatchEvent(new Event("loadgame"));
             });
         </script>
@@ -56,8 +68,8 @@
                 //make the canvas fullscreen
                 renderer.view.style.position = "absolute";
                 renderer.view.style.display = "block";
-                renderer.autoResize = false;
-                renderer.resize(window.innerWidth, window.innerHeight);
+                renderer.autoResize = true;
+                renderer.resize(window.innerHeight, window.innerWidth);
         
                 PIXI.loader.add(["assets/img/sq.png", "assets/img/bckground-bar1.png", "assets/img/mainBackground.png", "assets/img/circle.png"]).load(setup);
                 var virus;
@@ -102,8 +114,8 @@
                     //move the virus to center of screen
                 
         
-                    virus.width = 100;
-                    virus.height = 90;
+                    virus.width = 30;
+                    virus.height = 30;
                     virus.anchor.x = 0.5;
                     virus.anchor.y = 0.5;
                     
@@ -124,6 +136,7 @@
 
                         }
                         backgrounds[i].width = window.innerWidth;
+                        backgrounds[i].height = backgrounds[i].height / 5;
                         backgrounds[i].x = window.innerWidth * (i);
                         backgrounds[i].vx = 0;
                         if ((i > 2 && i < 10) || i > 12) {
@@ -416,10 +429,30 @@
                                     case 12:
                                     backgrounds[12].x = backgrounds[11].x + backgrounds[0].width;
                                     break;
-
-
                                 }
                                 
+                            }
+                            else if (backgrounds[i].x > backgrounds[0].width) {
+                                switch (i) {
+                                    case 0:
+                                    backgrounds[0].x = -backgrounds[2].x - backgrounds[0].width;
+                                    break;
+                                    case 1:
+                                    backgrounds[1].x = -backgrounds[0].x - backgrounds[0].width;
+                                    break;
+                                    case 2:
+                                    backgrounds[2].x = -backgrounds[1].x - backgrounds[0].width;
+                                    break;
+                                    case 10: 
+                                    backgrounds[10].x = -backgrounds[12].x - backgrounds[0].width;
+                                    break;
+                                    case 11:
+                                    backgrounds[11].x = -backgrounds[10].x - backgrounds[0].width;
+                                    break;
+                                    case 12:
+                                    backgrounds[12].x = -backgrounds[11].x - backgrounds[0].width;
+                                    break;
+                                }
                             }
                         }
                 
