@@ -439,22 +439,22 @@
                                 if (backgrounds[i].x > backgrounds[0].width) {
                                     switch (i) {
                                         case 0:
-                                        backgrounds[0].x = -backgrounds[2].x - backgrounds[0].width;
+                                        backgrounds[0].x = backgrounds[1].x - backgrounds[0].width;
                                         break;
                                         case 1:
-                                        backgrounds[1].x = -backgrounds[0].x - backgrounds[0].width;
+                                        backgrounds[1].x = backgrounds[2].x - backgrounds[0].width;
                                         break;
                                         case 2:
-                                        backgrounds[2].x = -backgrounds[1].x - backgrounds[0].width;
+                                        backgrounds[2].x = backgrounds[0].x - backgrounds[0].width;
                                         break;
                                         case 10: 
-                                        backgrounds[10].x = -backgrounds[12].x - backgrounds[0].width;
+                                        backgrounds[10].x = backgrounds[11].x - backgrounds[0].width;
                                         break;
                                         case 11:
-                                        backgrounds[11].x = -backgrounds[10].x - backgrounds[0].width;
+                                        backgrounds[11].x = backgrounds[12].x - backgrounds[0].width;
                                         break;
                                         case 12:
-                                        backgrounds[12].x = -backgrounds[11].x - backgrounds[0].width;
+                                        backgrounds[12].x = backgrounds[10].x - backgrounds[0].width;
                                         break;
                                     }
                                 }
